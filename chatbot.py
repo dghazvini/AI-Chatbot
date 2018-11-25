@@ -1,4 +1,5 @@
 import random
+#import tensorflow as tf
 
 GREETINGS_INPUT = ("hi", "hello", "hey")
 GREETINGS_OUTPUT = ("Hello there!, Hi!")
