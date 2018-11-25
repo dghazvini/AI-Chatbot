@@ -1,5 +1,7 @@
 import random
 #import tensorflow as tf
+#import numpy as np
+#import re
 
 GREETINGS_INPUT = ("hi", "hello", "hey")
 GREETINGS_OUTPUT = ("Hello there!, Hi!")
@@ -19,10 +21,20 @@ def checkFarewells(userInput):
         if word.lower() in FAREWELLS_INPUT:
             print(random.choice(FAREWELLS_OUTPUT))
 
+#def train():
+
+
 # Main method
 def main():
-    userInput = input("Hello there\n")
+  #  userInput = input("Hello there\n")
   #  checkGreetings(userInput)
   #  checkFarewells(userInput)
-
+    # Load data
+    lines = open('movie_lines.txt', encoding='utf-8', errors='ignore').read().split('\n')
+    conv_lines = open('movie_conversations.txt', encoding='utf-8', errors='ignore').read().split('\n')
+    # The sentences that we will be using to train our model.
+    lines[:10]
+    # The sentences' ids, which will be processed to become our input and target data.
+    conv_lines[:10]
+    
 main()
