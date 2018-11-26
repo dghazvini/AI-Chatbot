@@ -2,10 +2,11 @@ import random
 import re
 import sys
 import numpy
+import Levenshtein
 
-GREETINGS_OUTPUT = ["Hello there!", "Hi!", "What's up?", "Greetings!"]
+GREETINGS_OUTPUT = ["Hello there!", "Hi!", "What's up?", "Greetings!", "Welcome!"]
 FAREWELLS_INPUT = ("quit", "bye", "goodbye", "exit", "terminate")
-FAREWELLS_OUTPUT = ["See ya!", "Goodbye!", "Farewell!", "Sayonara!"]
+FAREWELLS_OUTPUT = ["See ya!", "Goodbye!", "Farewell!", "Sayonara!", "Catch ya later!"]
 
 # Quit program if user specifices
 def checkFarewells(userInput):
@@ -22,19 +23,24 @@ def NN(m1, m2, w1, w2, b):
 def sigmoid(x):
     return 1/(1 + numpy.exp(-x))
 
-# Calc Levenshtein Distance
+# Return the Levenshtein Distance of the userInput and whatever question in the dataset most matches it.
 def getLevenshteinDist(userInput):
-    return
-
-def giveResponse(userInput):
- # Generate random weights and bias
-    w1 = numpy.random.randn()
-    w2 = numpy.random.randn()
-    b = numpy.random.randn()
-
-    # Determine what predefined input is most similar to the user's input
+    
+    maxLevenshteinDist=0
     index=0
-    indexofMaxMatchingWordsQuestion=0
+    for question in questions:
+        ratio = Levenshtein.ratio(userInput, question.lower())
+        if ratio > maxLevenshteinDist:
+            maxLevenshteinDist = ratio
+            questionsIndexMaxLevenshtein = index
+        index=index+1
+
+    return maxLevenshteinDist, questionsIndexMaxLevenshtein
+
+# Determine what predefined question is most similar to the user's input based on word match count alone (Runs if Lev. Dist. isn't good enough)
+def getWordMatchValue(userInput):
+    index=0
+    indexOfMaxMatchingWords=0
     matchingWords=0
     maxMatchingWords=0
     for question in questions:
@@ -43,32 +49,49 @@ def giveResponse(userInput):
                 matchingWords=matchingWords+1
                 if matchingWords > maxMatchingWords:
                     maxMatchingWords = matchingWords
-                    indexofMaxMatchingWordsQuestion = index
+                    indexOfMaxMatchingWords = index
         index=index+1
         matchingWords=0
+    
+    return maxMatchingWords, indexOfMaxMatchingWords
 
-    # Case for when no words match a question query
-    if maxMatchingWords == 0:
-        index=0
-        for question in questions:
-            for letter in userInput:
-                if letter.lower() in question.lower():
-                    matchingWords=matchingWords+1
-                    if matchingWords > maxMatchingWords:
-                        maxMatchingWords = matchingWords
-                        indexofMaxMatchingWordsQuestion = index
-            index=index+1
-            matchingWords=0
-        print(answers[indexofMaxMatchingWordsQuestion])
-    else:
-        print(answers[indexofMaxMatchingWordsQuestion])
+# Function for simply matching number of similar characters. Last resort.
+def getCharMatchValue(userInput):
+    index=0
+    matchingLetters=0
+    maxMatchingLetters=0
+    for question in questions:
+        for letter in userInput:
+            if letter.lower() in question.lower():
+                matchingLetters=matchingLetters+1
+                if matchingLetters > maxMatchingLetters:
+                    maxMatchingLetters = matchingLetters
+                    indexofMaxMatchingLetters = index
+        index=index+1
+        matchingLetters=0
+    print(answers[indexofMaxMatchingLetters])
 
+def giveResponse(userInput):
+ # Generate random weights and bias
+    w1 = numpy.random.randn()
+    w2 = numpy.random.randn()
+    b = numpy.random.randn()
+
+    LD, LDIndex = getLevenshteinDist(userInput)
+    if LD < 0.72:   # LD isn't good enough, try another method
+        maxMatchingWords, MMWIndex = getWordMatchValue(userInput)
+        if maxMatchingWords == 0:
+            getCharMatchValue(userInput)
+        else:
+            print(answers[MMWIndex])
+    else: # LD is good enough
+        print(answers[LDIndex])
+    
     print("Activation is ", end=" ")
     print(NN(3, 1.5, w1, w2, b))
 
+# Clean text by removing unnecessary characters and altering the format of words.
 def clean_text(text):
-    '''Clean text by removing unnecessary characters and altering the format of words.'''
-
     text = text.lower()
     
     text = re.sub(r"i'm", "i am", text)
@@ -94,7 +117,6 @@ def clean_text(text):
     
     return text
 
-
 # *************** PROGRAM STARTS BELOW *****************
 # Load conversation data
 lines = open('movie_lines.txt', encoding='utf-8', errors='ignore').read().split('\n')
@@ -103,7 +125,7 @@ conv_lines = open('movie_conversations.txt', encoding='utf-8', errors='ignore').
 # The sentences that we will be using to train our model.
 lines[:10]
 
-# The sentences' ids, which will be processed to become our input and target data.
+# The sentence ids, which will be processed to become our input and target data.
 conv_lines[:10]
 
 # Create a dictionary to map each line's id with its text
@@ -133,13 +155,6 @@ for conv in convs:
 # for i in range(limit, limit+5):
 #     print(questions[i])
 #     print(answers[i])
-#     print()
-
-# Take a look at some of the data to ensure that it has been cleaned well.
-# limit = 0
-# for i in range(limit, limit+5):
-#     print(clean_questions[i])
-#     print(clean_answers[i])
 #     print()
 
 userInput = input(random.choice(GREETINGS_OUTPUT) + "\n")
