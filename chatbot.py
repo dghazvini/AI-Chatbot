@@ -3,17 +3,9 @@ import re
 import sys
 import numpy
 
-GREETINGS_INPUT = ("hi", "hello", "hey")
 GREETINGS_OUTPUT = ["Hello there!", "Hi!", "What's up?", "Greetings!"]
 FAREWELLS_INPUT = ("quit", "bye", "goodbye", "exit", "terminate")
 FAREWELLS_OUTPUT = ["See ya!", "Goodbye!", "Farewell!", "Sayonara!"]
-
-# Generic greetings
-def checkGreetings(userInput):
-    for word in userInput.split():
-        if word.lower() in GREETINGS_INPUT:
-            print(random.choice(GREETINGS_OUTPUT))
-            return
 
 # Quit program if user specifices
 def checkFarewells(userInput):
@@ -29,6 +21,10 @@ def NN(m1, m2, w1, w2, b):
 # Sigmoid function
 def sigmoid(x):
     return 1/(1 + numpy.exp(-x))
+
+# Calc Levenshtein Distance
+def getLevenshteinDist(userInput):
+    return
 
 def giveResponse(userInput):
  # Generate random weights and bias
@@ -98,7 +94,9 @@ def clean_text(text):
     
     return text
 
-# Load data
+
+# *************** PROGRAM STARTS BELOW *****************
+# Load conversation data
 lines = open('movie_lines.txt', encoding='utf-8', errors='ignore').read().split('\n')
 conv_lines = open('movie_conversations.txt', encoding='utf-8', errors='ignore').read().split('\n')
 
@@ -130,7 +128,7 @@ for conv in convs:
         questions.append(id2line[conv[i]])
         answers.append(id2line[conv[i+1]])
 
-# Check if we have loaded the data correctly
+# Check if we have loaded the data correctly (DEBUGGING)
 # limit = 0
 # for i in range(limit, limit+5):
 #     print(questions[i])
@@ -144,10 +142,9 @@ for conv in convs:
 #     print(clean_answers[i])
 #     print()
 
-userInput = input("Hello there, what can I do?\n")
+userInput = input(random.choice(GREETINGS_OUTPUT) + "\n")
 
 while True:
-    checkGreetings(userInput)
     checkFarewells(userInput)
     giveResponse(userInput)
     userInput = input()
