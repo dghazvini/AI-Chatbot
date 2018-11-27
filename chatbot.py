@@ -8,6 +8,9 @@ GREETINGS_OUTPUT = ["Hello there!", "Hi!", "What's up?", "Greetings!", "Welcome!
 FAREWELLS_INPUT = ("quit", "bye", "goodbye", "exit", "terminate")
 FAREWELLS_OUTPUT = ["See ya!", "Goodbye!", "Farewell!", "Sayonara!", "Catch ya later!"]
 
+# Global Activation value (Zero by default)
+Activation = 0
+
 # Quit program if user specifices
 def checkFarewells(userInput):
     if userInput.lower() in FAREWELLS_INPUT:
@@ -15,11 +18,11 @@ def checkFarewells(userInput):
         sys.exit()
 
 # Neural Net
-def NN(m1, m2, w1, w2, b):
-    z = m1 * w1 + m2 * w2 + b
+def NN(m1, m2, m3, w1, w2, w3, b):
+    z = m1 * w1 + m2 * w2 + m3 * w3 + b
     return sigmoid(z)
 
-# Sigmoid function
+# Sigmoid normalizing function
 def sigmoid(x):
     return 1/(1 + numpy.exp(-x))
 
@@ -70,25 +73,30 @@ def getCharMatchValue(userInput):
         index=index+1
         matchingLetters=0
     print(answers[indexofMaxMatchingLetters])
+    return(maxMatchingLetters/len(questions[indexofMaxMatchingLetters]))
 
 def giveResponse(userInput):
  # Generate random weights and bias
-    w1 = numpy.random.randn()
-    w2 = numpy.random.randn()
+    w1 = (numpy.random.randn() * .85)
+    w2 = (numpy.random.randn() * .10)
+    w3 = (numpy.random.randn() * .05)
     b = numpy.random.randn()
 
     LD, LDIndex = getLevenshteinDist(userInput)
     if LD < 0.72:   # LD isn't good enough, try another method
         maxMatchingWords, MMWIndex = getWordMatchValue(userInput)
         if maxMatchingWords == 0:
-            getCharMatchValue(userInput)
+            CMV = getCharMatchValue(userInput)
         else:
             print(answers[MMWIndex])
     else: # LD is good enough
         print(answers[LDIndex])
+        Activation = NN(LD, 0.0, 0.0, w1, w2, w3, b)
+        print("Activation is", Activation)
+        return
     
-    print("Activation is ", end=" ")
-    print(NN(3, 1.5, w1, w2, b))
+    Activation = NN(LD, sigmoid(maxMatchingWords), sigmoid(CMV), w1, w2, w3, b)
+    print("Activation is", Activation)
 
 # Clean text by removing unnecessary characters and altering the format of words.
 def clean_text(text):
