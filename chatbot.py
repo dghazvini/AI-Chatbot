@@ -31,6 +31,7 @@ def getLevenshteinDist(userInput):
     
     maxLevenshteinDist=0
     index=0
+    questionsIndexMaxLevenshtein=0
     for question in questions:
         ratio = Levenshtein.ratio(userInput, question.lower())
         if ratio > maxLevenshteinDist:
@@ -89,6 +90,7 @@ def giveResponse(userInput):
             CMV = getCharMatchValue(userInput)
         else:
             print(answers[MMWIndex])
+            CMV = 0.0
     else: # LD is good enough
         print(answers[LDIndex])
         Activation = NN(LD, 0.0, 0.0, w1, w2, w3, b)
@@ -98,7 +100,7 @@ def giveResponse(userInput):
     Activation = NN(LD, sigmoid(maxMatchingWords), sigmoid(CMV), w1, w2, w3, b)
     print("Activation is", Activation)
 
-# Clean text by removing unnecessary characters and altering the format of words.
+# Clean text
 def clean_text(text):
     text = text.lower()
     
