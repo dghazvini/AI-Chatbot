@@ -105,20 +105,27 @@ def giveResponse(userInput):
     w2 = (numpy.random.randn() * .05)
     b = numpy.random.randn()
 
+    if(len(userInput) == 0):
+        return
+
     # Try Hamming distance first
     HDIndex, HD = getHammingDistance(userInput)
     if (HD/len(userInput) <= .25):
+        print("("+questions[HDIndex]+")")   # Question that most matches what user inputs
         print(answers[HDIndex])
+        print()
         Activation = NN(HD/len(userInput), 0.0, w1, w2, b)
-        print("Activation is", Activation)
+    #    print("Activation is", Activation)
         return
 
     #print("Trying LD...")
     # Try Levenshtein Distance second
     LDIndex, LD = getLevenshteinDist(userInput)
+    print("("+questions[LDIndex]+")")   # Question that most matches what user inputs
     print(answers[LDIndex])
+    print()
     Activation = NN(LD/len(userInput), 0.0, w1, w2, b)
-    print("Activation is", Activation)
+ #   print("Activation is", Activation)
     return
     # if (LD/len(userInput) >= .30): 
     #     print("Trying to get CMV...")
@@ -166,11 +173,7 @@ def clean_text(text):
 # Load conversation data
 lines = open('movie_lines.txt', encoding='utf-8', errors='ignore').read().split('\n')
 conv_lines = open('movie_conversations.txt', encoding='utf-8', errors='ignore').read().split('\n')
-
-# The sentences that we will be using to train our model.
 lines[:10]
-
-# The sentence ids, which will be processed to become our input and target data.
 conv_lines[:10]
 
 # Create a dictionary to map each line's id with its text
@@ -196,11 +199,11 @@ for conv in convs:
         answers.append(id2line[conv[i+1]])
 
 #Check if we have loaded the data correctly (DEBUGGING)
-limit = 0
-for i in range(limit, limit+5):
-    print(questions[i])
-    print(answers[i])
-    print()
+# limit = 0
+# for i in range(limit, limit+50):
+#     print(questions[i])
+#     print(answers[i])
+#     print()
 
 userInput = input(random.choice(GREETINGS_OUTPUT) + "\n")
 
