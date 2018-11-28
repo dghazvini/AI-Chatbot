@@ -18,87 +18,122 @@ def checkFarewells(userInput):
         sys.exit()
 
 # Neural Net
-def NN(m1, m2, m3, w1, w2, w3, b):
-    z = m1 * w1 + m2 * w2 + m3 * w3 + b
+def NN(m1, m2, w1, w2, b):
+    z = m1 * w1 + m2 * w2 + b
     return sigmoid(z)
 
 # Sigmoid normalizing function
 def sigmoid(x):
     return 1/(1 + numpy.exp(-x))
 
-# Return the Levenshtein Distance of the userInput and whatever question in the dataset most matches it.
+# Return the index of the string in the dataset with the lowest Levenshtein Distance and the Levenshtein Distance itself.
 def getLevenshteinDist(userInput):
     
-    maxLevenshteinDist=0
     index=0
-    questionsIndexMaxLevenshtein=0
+    minLD=999
+    indexOfMinDist=0
     for question in questions:
-        ratio = Levenshtein.ratio(userInput, question.lower())
-        if ratio > maxLevenshteinDist:
-            maxLevenshteinDist = ratio
-            questionsIndexMaxLevenshtein = index
+        LD = Levenshtein.distance(userInput, question.lower())
+        if LD < minLD:
+            minLD = LD
+            indexOfMinDist=index
         index=index+1
 
-    return maxLevenshteinDist, questionsIndexMaxLevenshtein
+    return indexOfMinDist, minLD
+
+# Return the index of the string in the dataset with the lowest Hamming distance and the Hamming Distance itself.
+def getHammingDistance(userInput):
+
+    index=0
+    distance=0
+    minHD=999
+    indexOfMinDist=0
+    for question in questions:
+        if len(userInput) == len(questions[index]):
+            distance=0
+            for i in range(len(userInput)):
+                if(userInput[i] != questions[index][i]):
+                    distance=distance+1
+            if distance < minHD:
+                minHD = distance
+                indexOfMinDist = index
+        index=index+1
+    
+    return indexOfMinDist, minHD
+
 
 # Determine what predefined question is most similar to the user's input based on word match count alone (Runs if Lev. Dist. isn't good enough)
-def getWordMatchValue(userInput):
-    index=0
-    indexOfMaxMatchingWords=0
-    matchingWords=0
-    maxMatchingWords=0
-    for question in questions:
-        for word in userInput.split():
-            if word.lower() in question.lower():
-                matchingWords=matchingWords+1
-                if matchingWords > maxMatchingWords:
-                    maxMatchingWords = matchingWords
-                    indexOfMaxMatchingWords = index
-        index=index+1
-        matchingWords=0
+# def getWordMatchValue(userInput):
+#     index=0
+#     indexOfMaxMatchingWords=0
+#     matchingWords=0
+#     maxMatchingWords=0
+#     for question in questions:
+#         for word in userInput.split():
+#             if word.lower() in question.lower():
+#                 matchingWords=matchingWords+1
+#                 if matchingWords > maxMatchingWords:
+#                     maxMatchingWords = matchingWords
+#                     indexOfMaxMatchingWords = index
+#         index=index+1
+#         matchingWords=0
     
-    return maxMatchingWords, indexOfMaxMatchingWords
+#     return maxMatchingWords, indexOfMaxMatchingWords
 
-# Function for simply matching number of similar characters. Last resort.
-def getCharMatchValue(userInput):
-    index=0
-    matchingLetters=0
-    maxMatchingLetters=0
-    for question in questions:
-        for letter in userInput:
-            if letter.lower() in question.lower():
-                matchingLetters=matchingLetters+1
-                if matchingLetters > maxMatchingLetters:
-                    maxMatchingLetters = matchingLetters
-                    indexofMaxMatchingLetters = index
-        index=index+1
-        matchingLetters=0
-    print(answers[indexofMaxMatchingLetters])
-    return(maxMatchingLetters/len(questions[indexofMaxMatchingLetters]))
+# Function for simply matching number of similar characters. Returns index and # of matching characters. Last resort.
+# def getCharMatchValue(userInput):
+
+#     index=0
+#     matchingChars=0
+#     maxMatchingChars=0
+#     for question in questions:
+#         for letter in userInput:
+#             if letter.lower() in question.lower():
+#                 matchingChars=matchingChars+1
+#                 if matchingChars > maxMatchingChars:
+#                     maxMatchingChars = matchingChars
+#                     indexOfMostMatchingChars = index
+#         index=index+1
+#         matchingChars=0
+
+#     #return(maxMatchingLetters/len(questions[indexofMaxMatchingLetters]))
+#     return indexOfMostMatchingChars, maxMatchingChars
 
 def giveResponse(userInput):
  # Generate random weights and bias
-    w1 = (numpy.random.randn() * .85)
-    w2 = (numpy.random.randn() * .10)
-    w3 = (numpy.random.randn() * .05)
+    w1 = (numpy.random.randn() * .95)
+    w2 = (numpy.random.randn() * .05)
     b = numpy.random.randn()
 
-    LD, LDIndex = getLevenshteinDist(userInput)
-    if LD < 0.72:   # LD isn't good enough, try another method
-        maxMatchingWords, MMWIndex = getWordMatchValue(userInput)
-        if maxMatchingWords == 0:
-            CMV = getCharMatchValue(userInput)
-        else:
-            print(answers[MMWIndex])
-            CMV = 0.0
-    else: # LD is good enough
-        print(answers[LDIndex])
-        Activation = NN(LD, 0.0, 0.0, w1, w2, w3, b)
+    # Try Hamming distance first
+    HDIndex, HD = getHammingDistance(userInput)
+    if (HD/len(userInput) <= .25):
+        print(answers[HDIndex])
+        Activation = NN(HD/len(userInput), 0.0, w1, w2, b)
         print("Activation is", Activation)
         return
-    
-    Activation = NN(LD, sigmoid(maxMatchingWords), sigmoid(CMV), w1, w2, w3, b)
+
+    #print("Trying LD...")
+    # Try Levenshtein Distance second
+    LDIndex, LD = getLevenshteinDist(userInput)
+    print(answers[LDIndex])
+    Activation = NN(LD/len(userInput), 0.0, w1, w2, b)
     print("Activation is", Activation)
+    return
+    # if (LD/len(userInput) >= .30): 
+    #     print("Trying to get CMV...")
+    #     CMVIndex, CMV = getCharMatchValue(userInput)
+    #     print(answers[CMVIndex])
+    #     Activation = NN(CMV, 0.0, w1, w2, b)
+    #     print("Activation is", Activation)
+    #     return
+    # else: # LD is good enough
+    #     #print("Good nuff")
+    #     print(answers[LDIndex])
+    #     Activation = NN(LD/len(userInput), 0.0, w1, w2, b)
+    #     print("Activation is", Activation)
+    #     return
+    
 
 # Clean text
 def clean_text(text):
@@ -160,12 +195,12 @@ for conv in convs:
         questions.append(id2line[conv[i]])
         answers.append(id2line[conv[i+1]])
 
-# Check if we have loaded the data correctly (DEBUGGING)
-# limit = 0
-# for i in range(limit, limit+5):
-#     print(questions[i])
-#     print(answers[i])
-#     print()
+#Check if we have loaded the data correctly (DEBUGGING)
+limit = 0
+for i in range(limit, limit+5):
+    print(questions[i])
+    print(answers[i])
+    print()
 
 userInput = input(random.choice(GREETINGS_OUTPUT) + "\n")
 
