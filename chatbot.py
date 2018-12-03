@@ -142,10 +142,9 @@ def giveResponse(userInput):
     #     return
     
 
-# Clean text
+# Standardizes and cleans text a bit to make results more consistent
 def clean_text(text):
     text = text.lower()
-    
     text = re.sub(r"i'm", "i am", text)
     text = re.sub(r"he's", "he is", text)
     text = re.sub(r"she's", "she is", text)
@@ -166,7 +165,6 @@ def clean_text(text):
     text = re.sub(r"'bout", "about", text)
     text = re.sub(r"'til", "until", text)
     text = re.sub(r"[-()\"#/@;:<>{}`+=~|.!?,]", "", text)
-    
     return text
 
 # *************** PROGRAM STARTS BELOW *****************
@@ -205,6 +203,7 @@ for conv in convs:
 #     print(answers[i])
 #     print()
 
+# Run the bot
 userInput = input(random.choice(GREETINGS_OUTPUT) + "\n")
 
 while True:
